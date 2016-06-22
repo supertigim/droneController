@@ -4,6 +4,16 @@ This program shows that drone can be controlled through common commecical mobile
 
 You can get most of information related to this in [the site](http://tech.tigiminsight.com/2016/06/12/how-to-use-dronekit.html) even if those are written in Korean, because google translator can help you. :)  
 
+## Open Source List
+
+There are many open source used in this project 
+
+- Raspberry Pi3 
+- Pixhawk
+- PyQT
+- Dronekit
+- Mavproxy
+
 ## How to test  
 
 [This video](https://www.youtube.com/watch?v=6sRNNMlCmjM) shows how it works  
