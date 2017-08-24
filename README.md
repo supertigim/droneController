@@ -24,7 +24,7 @@ On drone, companion computer also powers up, and mavproxy runs as a bridge to bo
 
 	mavproxy.py  --udpout 127.0.0.1:14550 --tcpout 127.0.0.1:14550 
 
-Also, in your laptop, you download this source code and run while gcs needs to connect, because it lets you know whole status of drone. Of course, environment settings are required as described [here](http://tech.tigiminsight.com/2016/06/12/how-to-use-dronekit.html)
+Also, in your laptop, you download this source code and run while gcs needs to connect, because it lets you know whole status of drone. Of course, environment settings are required as described [here](https://supertigim.github.io/2016/06/12/how-to-use-dronekit.html)
 
 ## License  
   
