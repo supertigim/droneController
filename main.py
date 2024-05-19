@@ -7,16 +7,18 @@ from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 from threading import Thread
 
-import argparse
+import configparser
 from enum import Enum
 from collections import defaultdict
 import time
 from Quadrotor import Quadrotor
 import numpy as np
+import os
 
-TAKEOFF_ALTITUDE = 1 # m
-DT = 0.05 # sec
-CMD_VEL = 0.4 # m/s
+
+TRAJ_PATH = '/home/redwan/PycharmProjects/droneController/trajs/spiral8.csv'
+
+
 
 class State(Enum):
     INITIALIZED = 0
@@ -33,13 +35,15 @@ class Action(Enum):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, args):
+    def __init__(self, config):
+
         super().__init__()
         uic.loadUi('window.ui', self)
+        self.config = config
         self.state = State.LAND
         self.coord = np.zeros(3)
         self.progressBar.setValue(0)
-        self.thread = Thread(target=self.connect, args=(args,))
+        self.thread = Thread(target=self.connect, args=(config.ip_addr,))
         self.thread.start()
 
         self.transition = defaultdict(dict)
@@ -48,7 +52,7 @@ class MainWindow(QMainWindow):
         self.transition[State.TAKEOFF][Action.HAS_ARRIVED] = State.HOVER
         self.transition[State.LAND][Action.DISARMED] = State.INITIALIZED
 
-        self.launchAlt = TAKEOFF_ALTITUDE
+        self.launchAlt = self.config.default_takeoff_alt
         self.btnLaunch.clicked.connect(self.launch_click)
 
         self.btnWest.clicked.connect(self.west_click)
@@ -81,21 +85,25 @@ class MainWindow(QMainWindow):
             self.traj_timer.stop()
 
     def sendTrajectory(self):
-        trajPath = "/home/redwan/PycharmProjects/droneController/trajs/spiral8.csv"
+
+        if not os.path.exists(TRAJ_PATH):
+            print(f'{self.config.traj_path} does not exist!')
+            return
         print('sending trajectory')
 
         if self.state == State.HOVER:
-            self.traj = np.loadtxt(trajPath, delimiter=",")
+            self.traj = np.loadtxt(TRAJ_PATH, delimiter=",")
             self.traj_timer = QTimer()
             self.traj_index = 0
             self.traj_timer.timeout.connect(self.traj_callback)
-            self.traj_timer.start(25)
-    def connect(self, args):
-        self.connection_string = args.connect
+            self.traj_timer.start(self.config.traj_dt)
+
+    def connect(self, ip_addr):
+        self.connection_string = ip_addr
         self.sitl = None
 
         # Start SITL if no connection string specified
-        if not self.connection_string:
+        if  len(self.connection_string) < 3:
             import dronekit_sitl
             self.sitl = dronekit_sitl.start_default()
             self.connection_string = self.sitl.connection_string()
@@ -206,8 +214,8 @@ class MainWindow(QMainWindow):
         elapsed_time = 0.0
         while elapsed_time < duration:
             self.publish_cmd_vel(velocity_x, velocity_y, velocity_z)
-            time.sleep(DT)
-            elapsed_time += DT
+            time.sleep(self.config.default_dt)
+            elapsed_time += self.config.default_dt
 
 
     ############### Joystick communication ##########################################################################
@@ -219,25 +227,25 @@ class MainWindow(QMainWindow):
     def west_click(self):
         @self.vehicle_validation
         def west_wrapped():
-            self.send_ned_velocity(0, -CMD_VEL, 0, 1)
+            self.send_ned_velocity(0, -self.config.default_cmd_vel, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def east_click(self):
         @self.vehicle_validation
         def east_wrapped():
-            self.send_ned_velocity(0, CMD_VEL, 0, 1)
+            self.send_ned_velocity(0, self.config.default_cmd_vel, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def north_click(self):
         @self.vehicle_validation
         def north_wrapped():
-            self.send_ned_velocity(CMD_VEL, 0, 0, 1)
+            self.send_ned_velocity(self.config.default_cmd_vel, 0, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def south_click(self):
         @self.vehicle_validation
         def south_wrapped():
-            self.send_ned_velocity(-CMD_VEL, 0, 0, 1)
+            self.send_ned_velocity(-self.config.default_cmd_vel, 0, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def rtl_click(self):
@@ -252,7 +260,7 @@ class MainWindow(QMainWindow):
         def up_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
             if alt < 3:
-                self.send_ned_velocity(0, 0, -0.5 * CMD_VEL, 1)
+                self.send_ned_velocity(0, 0, -0.5 * self.config.default_cmd_vel, 1)
                 # self.send_ned_velocity(0, 0, 0, 1)
 
     def down_click(self):
@@ -260,7 +268,7 @@ class MainWindow(QMainWindow):
         def down_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
             if alt > 0.5:
-                self.send_ned_velocity(0, 0, 0.5 * CMD_VEL, 1)
+                self.send_ned_velocity(0, 0, 0.5 * self.config.default_cmd_vel, 1)
                 # self.send_ned_velocity(0, 0, 0, 1)
 
 
@@ -278,14 +286,25 @@ class MainWindow(QMainWindow):
             print("launch has already been initialized !")
 
 
-if __name__ == '__main__':
-    # Set up option parsing to get connection string
-    parser = argparse.ArgumentParser(
-        description='Tracks GPS position of your computer (Linux only). Connects to SITL on local PC by default.')
-    parser.add_argument('--connect', help="vehicle connection target.")
-    args = parser.parse_args()
+class Config:
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.traj_path = f"{config['Trajectory']['traj_path']}"
+        self.traj_dt = int(config['Trajectory']['traj_dt'])
+        self.default_takeoff_alt = float(config['DEFAULT']['TAKEOFF_ALTITUDE'])
+        self.default_cmd_vel = float(config['DEFAULT']['CMD_VEL'])
+        self.default_dt = float(config['DEFAULT']['DT'])
 
+        self.ip_addr = f"{config['DRONEKIT']['IP_ADDR']}"
+
+
+
+if __name__ == '__main__':
+
+
+    config = Config()
     app = QApplication(sys.argv)
-    window = MainWindow(args)
+    window = MainWindow(config)
     window.show()
     sys.exit(app.exec())
