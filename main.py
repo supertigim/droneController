@@ -98,8 +98,15 @@ class MainWindow(QMainWindow):
     def updateLocationGUI(self, location):
         self.lblLongValue.setText(str(location.global_frame.lon))
         self.lblLatValue.setText(str(location.global_frame.lat))
+
         self.lblAltValue.setText(str(location.global_relative_frame.alt))
-        self.quad.update_pose(0,0,location.global_relative_frame.alt,0,0,0)
+        # location.local_frame.
+        x = location.local_frame.east
+        y = location.local_frame.north
+        if x is None or y is None:
+            x,  y = 0, 0
+        # print(x, y)
+        self.quad.update_pose(x,y,location.global_relative_frame.alt,0,0,0)
 
     def addObserverAndInit(self, name, cb):
         """We go ahead and call our observer once at startup to get an initial value"""
