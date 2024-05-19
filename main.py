@@ -157,10 +157,10 @@ class MainWindow(QMainWindow):
             0, 0, 0,  # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
             0, 0)  # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
 
-        # send command to vehicle on 1 Hz cycle
-        for x in range(0, duration):
-            self.vehicle.send_mavlink(msg)
-            time.sleep(DT)
+        # send command to vehicle on x Hz cycle
+        self.vehicle.send_mavlink(msg)
+        time.sleep(DT)
+
 
     ############### Joystick communication ##########################################################################
     def vehicle_validation(self, function):
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
     def rtl_click(self):
         @self.vehicle_validation
         def rtl_wrapped():
-            self.vehicle.mode = VehicleMode("RTL")
+            self.vehicle.mode = VehicleMode("LAND")
 
     def up_click(self):
         @self.vehicle_validation
