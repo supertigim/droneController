@@ -14,14 +14,15 @@ import time
 from Quadrotor import Quadrotor
 
 TAKEOFF_ALTITUDE = 5 # m
-DT = 1 # sec
-CMD_VEL = 1 # m/s
+DT = 0.05 # sec
+CMD_VEL = 0.4 # m/s
 
 class State(Enum):
     INITIALIZED = 0
     ARMED = 1
     TAKEOFF = 2
     HOVER = 3
+    LAND = 4
 
 class Action(Enum):
     IS_ARMABLE = 0
@@ -33,6 +34,7 @@ class MainWindow(QMainWindow):
     def __init__(self, args):
         super().__init__()
         uic.loadUi('window.ui', self)
+        self.state = State.LAND
         self.progressBar.setValue(0)
         self.thread = Thread(target=self.connect, args=(args,))
         self.thread.start()
@@ -96,8 +98,8 @@ class MainWindow(QMainWindow):
         self.lblFlightModeValue.setText(mode)
 
     def updateLocationGUI(self, location):
-        self.lblLongValue.setText(str(location.global_frame.lon))
-        self.lblLatValue.setText(str(location.global_frame.lat))
+        # self.lblLongValue.setText(str(location.global_frame.lon))
+        # self.lblLatValue.setText(str(location.global_frame.lat))
 
         self.lblAltValue.setText(str(location.global_relative_frame.alt))
         # location.local_frame.
@@ -106,6 +108,8 @@ class MainWindow(QMainWindow):
         if x is None or y is None:
             x,  y = 0, 0
         # print(x, y)
+        self.lblLongValue.setText(f"{x:.4f}")
+        self.lblLatValue.setText(f"{y:.4f}")
         self.quad.update_pose(x,y,location.global_relative_frame.alt,0,0,0)
 
     def addObserverAndInit(self, name, cb):
@@ -158,8 +162,11 @@ class MainWindow(QMainWindow):
             0, 0)  # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
 
         # send command to vehicle on x Hz cycle
-        self.vehicle.send_mavlink(msg)
-        time.sleep(DT)
+        elapsed_time = 0.0
+        while elapsed_time < duration:
+            self.vehicle.send_mavlink(msg)
+            time.sleep(DT)
+            elapsed_time += DT
 
 
     ############### Joystick communication ##########################################################################
@@ -172,30 +179,32 @@ class MainWindow(QMainWindow):
         @self.vehicle_validation
         def west_wrapped():
             self.send_ned_velocity(0, -CMD_VEL, 0, 1)
-            self.send_ned_velocity(0, 0, 0, 1)
+            # self.send_ned_velocity(0, 0, 0, 1)
 
     def east_click(self):
         @self.vehicle_validation
         def east_wrapped():
             self.send_ned_velocity(0, CMD_VEL, 0, 1)
-            self.send_ned_velocity(0, 0, 0, 1)
+            # self.send_ned_velocity(0, 0, 0, 1)
 
     def north_click(self):
         @self.vehicle_validation
         def north_wrapped():
             self.send_ned_velocity(CMD_VEL, 0, 0, 1)
-            self.send_ned_velocity(0, 0, 0, 1)
+            # self.send_ned_velocity(0, 0, 0, 1)
 
     def south_click(self):
         @self.vehicle_validation
         def south_wrapped():
             self.send_ned_velocity(-CMD_VEL, 0, 0, 1)
-            self.send_ned_velocity(0, 0, 0, 1)
+            # self.send_ned_velocity(0, 0, 0, 1)
 
     def rtl_click(self):
         @self.vehicle_validation
         def rtl_wrapped():
             self.vehicle.mode = VehicleMode("LAND")
+            self.state = State.INITIALIZED
+
 
     def up_click(self):
         @self.vehicle_validation
@@ -203,7 +212,7 @@ class MainWindow(QMainWindow):
             alt = self.vehicle.location.global_relative_frame.alt
             if alt < 20:
                 self.send_ned_velocity(0, 0, -0.5, 1)
-                self.send_ned_velocity(0, 0, 0, 1)
+                # self.send_ned_velocity(0, 0, 0, 1)
 
     def down_click(self):
         @self.vehicle_validation
@@ -211,7 +220,7 @@ class MainWindow(QMainWindow):
             alt = self.vehicle.location.global_relative_frame.alt
             if alt > 3:
                 self.send_ned_velocity(0, 0, 0.5 * CMD_VEL, 1)
-                self.send_ned_velocity(0, 0, 0, 1)
+                # self.send_ned_velocity(0, 0, 0, 1)
 
 
     def launch_click(self):
