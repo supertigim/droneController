@@ -18,7 +18,7 @@
     <item row="0" column="0" rowspan="2" colspan="2">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,0,0">
       <item>
-       <layout class="QVBoxLayout" name="matplotlib_layout"/>
+       <layout class="QVBoxLayout" name="viewer"/>
       </item>
       <item>
        <widget class="Line" name="line">

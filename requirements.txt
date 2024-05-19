@@ -1,5 +1,5 @@
 pymavlink==2.4.8
 dronekit
 dronekit-sitl
-pyqt6
+pyqt5
 matplotlib

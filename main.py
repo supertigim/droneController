@@ -1,16 +1,17 @@
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 
-from PyQt6.QtWidgets import QApplication, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QApplication, QTableWidgetItem, QMainWindow
 import sys
-from PyQt6 import uic
-from PyQt6.QtCore import QTimer
+from PyQt5 import uic
+from PyQt5.QtCore import QTimer
 from threading import Thread
 
 import argparse
 from enum import Enum
 from collections import defaultdict
 import time
+from Quadrotor import Quadrotor
 
 TAKEOFF_ALTITUDE = 5 # m
 DT = 1 # sec
@@ -51,6 +52,11 @@ class MainWindow(QMainWindow):
         self.btnRTL.clicked.connect(self.rtl_click)
         self.btnUp.clicked.connect(self.up_click)
         self.btnDown.clicked.connect(self.down_click)
+
+        # add visualizer
+        self.quad = Quadrotor(size=0.5)
+
+        self.viewer.addWidget(self.quad.canvas)
 
     def connect(self, args):
         self.connection_string = args.connect
@@ -93,6 +99,7 @@ class MainWindow(QMainWindow):
         self.lblLongValue.setText(str(location.global_frame.lon))
         self.lblLatValue.setText(str(location.global_frame.lat))
         self.lblAltValue.setText(str(location.global_relative_frame.alt))
+        self.quad.update_pose(0,0,location.global_relative_frame.alt,0,0,0)
 
     def addObserverAndInit(self, name, cb):
         """We go ahead and call our observer once at startup to get an initial value"""
