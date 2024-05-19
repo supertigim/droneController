@@ -12,6 +12,7 @@ from enum import Enum
 from collections import defaultdict
 import time
 from Quadrotor import Quadrotor
+import numpy as np
 
 TAKEOFF_ALTITUDE = 1 # m
 DT = 0.05 # sec
@@ -36,6 +37,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         uic.loadUi('window.ui', self)
         self.state = State.LAND
+        self.coord = np.zeros(3)
         self.progressBar.setValue(0)
         self.thread = Thread(target=self.connect, args=(args,))
         self.thread.start()
@@ -56,12 +58,38 @@ class MainWindow(QMainWindow):
         self.btnRTL.clicked.connect(self.rtl_click)
         self.btnUp.clicked.connect(self.up_click)
         self.btnDown.clicked.connect(self.down_click)
+        self.btnSendTraj.clicked.connect(self.sendTrajectory)
 
         # add visualizer
         self.quad = Quadrotor(size=0.5)
 
         self.viewer.addWidget(self.quad.canvas)
 
+
+    def traj_callback(self):
+        self.traj_index += 1
+        if self.traj_index < len(self.traj):
+            target = self.traj[self.traj_index][1:]
+            vel = target - self.coord
+            vx, vy, vz = vel
+            print(f"[Traj] vx = {vx:.3f}, vy = {vy:.3f} ")
+            self.publish_cmd_vel(vy, vx, -vz)
+        elif self.traj_index - 10 < len(self.traj):
+            self.publish_cmd_vel(0, 0, 0)
+        else:
+            print("trajectory timer stopped")
+            self.traj_timer.stop()
+
+    def sendTrajectory(self):
+        trajPath = "/home/redwan/PycharmProjects/droneController/trajs/spiral8.csv"
+        print('sending trajectory')
+
+        if self.state == State.HOVER:
+            self.traj = np.loadtxt(trajPath, delimiter=",")
+            self.traj_timer = QTimer()
+            self.traj_index = 0
+            self.traj_timer.timeout.connect(self.traj_callback)
+            self.traj_timer.start(25)
     def connect(self, args):
         self.connection_string = args.connect
         self.sitl = None
@@ -110,6 +138,9 @@ class MainWindow(QMainWindow):
         if x is None or y is None:
             x,  y = 0, 0
         # print(x, y)
+        self.coord[0] = x
+        self.coord[1] = y
+        self.coord[2] = location.global_relative_frame.alt
         self.lblLongValue.setText(f"{x:.4f}")
         self.lblLatValue.setText(f"{y:.4f}")
         self.quad.update_pose(x,y,location.global_relative_frame.alt,0,0,0)
@@ -157,7 +188,8 @@ class MainWindow(QMainWindow):
             self.timer.stop()
 
             ############### MAV LINK communication ##########################################################################
-    def send_ned_velocity(self, velocity_x, velocity_y, velocity_z, duration):
+
+    def publish_cmd_vel(self, velocity_x, velocity_y, velocity_z):
         msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
             0,  # time_boot_ms (not used)
             0, 0,  # target system, target component
@@ -167,11 +199,13 @@ class MainWindow(QMainWindow):
             velocity_x, velocity_y, velocity_z,  # x, y, z velocity in m/s
             0, 0, 0,  # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
             0, 0)  # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+        self.vehicle.send_mavlink(msg)
 
+    def send_ned_velocity(self, velocity_x, velocity_y, velocity_z, duration):
         # send command to vehicle on x Hz cycle
         elapsed_time = 0.0
         while elapsed_time < duration:
-            self.vehicle.send_mavlink(msg)
+            self.publish_cmd_vel(velocity_x, velocity_y, velocity_z)
             time.sleep(DT)
             elapsed_time += DT
 
