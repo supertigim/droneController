@@ -13,7 +13,7 @@ from collections import defaultdict
 import time
 from Quadrotor import Quadrotor
 
-TAKEOFF_ALTITUDE = 5 # m
+TAKEOFF_ALTITUDE = 1 # m
 DT = 0.05 # sec
 CMD_VEL = 0.4 # m/s
 
@@ -210,15 +210,15 @@ class MainWindow(QMainWindow):
         @self.vehicle_validation
         def up_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
-            if alt < 20:
-                self.send_ned_velocity(0, 0, -0.5, 1)
+            if alt < 3:
+                self.send_ned_velocity(0, 0, -0.5 * CMD_VEL, 1)
                 # self.send_ned_velocity(0, 0, 0, 1)
 
     def down_click(self):
         @self.vehicle_validation
         def down_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
-            if alt > 3:
+            if alt > 0.5:
                 self.send_ned_velocity(0, 0, 0.5 * CMD_VEL, 1)
                 # self.send_ned_velocity(0, 0, 0, 1)
 

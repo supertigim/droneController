@@ -88,7 +88,7 @@ class Quadrotor:
 
         self.ax.set_xlim(-5, 5)
         self.ax.set_ylim(-5, 5)
-        self.ax.set_zlim(0, 10)
+        self.ax.set_zlim(0, 3)
 
         # plt.pause(0.001)
         self.canvas.draw()
