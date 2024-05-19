@@ -28,6 +28,7 @@ class Action(Enum):
     IS_ARMABLE = 0
     IS_ARMED = 1
     HAS_ARRIVED = 2
+    DISARMED = 3
 
 
 class MainWindow(QMainWindow):
@@ -43,6 +44,7 @@ class MainWindow(QMainWindow):
         self.transition[State.INITIALIZED][Action.IS_ARMABLE] = State.ARMED
         self.transition[State.ARMED][Action.IS_ARMED] = State.TAKEOFF
         self.transition[State.TAKEOFF][Action.HAS_ARRIVED] = State.HOVER
+        self.transition[State.LAND][Action.DISARMED] = State.INITIALIZED
 
         self.launchAlt = TAKEOFF_ALTITUDE
         self.btnLaunch.clicked.connect(self.launch_click)
@@ -124,6 +126,8 @@ class MainWindow(QMainWindow):
             return  Action.IS_ARMED
         elif state == State.TAKEOFF  and self.vehicle.location.global_relative_frame.alt >= self.launchAlt * 0.95:
             return Action.HAS_ARRIVED
+        elif state == State.LAND and not self.vehicle.armed:
+            return Action.DISARMED
     def timerCallback(self):
         """
         complete the launch process, update the state machine
@@ -146,8 +150,11 @@ class MainWindow(QMainWindow):
 
         elif self.state == State.HOVER:
             print("vehicle reached to hovering position")
-            self.timer.stop()
             self.progressBar.setValue(100)
+
+        elif self.state == State.INITIALIZED:
+            print("vehicle landed")
+            self.timer.stop()
 
             ############### MAV LINK communication ##########################################################################
     def send_ned_velocity(self, velocity_x, velocity_y, velocity_z, duration):
@@ -203,7 +210,7 @@ class MainWindow(QMainWindow):
         @self.vehicle_validation
         def rtl_wrapped():
             self.vehicle.mode = VehicleMode("LAND")
-            self.state = State.INITIALIZED
+            self.state = State.LAND
 
 
     def up_click(self):
