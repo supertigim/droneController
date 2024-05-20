@@ -86,8 +86,8 @@ class Quadrotor:
 
         self.ax.plot(self.x_data, self.y_data, self.z_data, 'b:')
 
-        self.ax.set_xlim(-5, 5)
-        self.ax.set_ylim(-5, 5)
+        self.ax.set_xlim(-3.0, 3.0)
+        self.ax.set_ylim(-3.0, 3.0)
         self.ax.set_zlim(0, 3)
 
         # plt.pause(0.001)

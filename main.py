@@ -25,7 +25,7 @@ class Config:
     def __init__(self):
         config = configparser.ConfigParser()
         config.read('config.ini')
-        self.traj_path = f"{os.getcwd()}/{str(config['Trajectory']['traj_path'])}"
+        self.traj_path = f"{str(config['Trajectory']['traj_path'])}"
         self.traj_dt = int(config['Trajectory']['traj_dt'])
         self.default_takeoff_alt = float(config['DEFAULT']['TAKEOFF_ALTITUDE'])
         self.default_cmd_vel = float(config['DEFAULT']['CMD_VEL'])
@@ -72,7 +72,6 @@ class MainWindow(QMainWindow):
 
         self.launchAlt = self.config.default_takeoff_alt
         self.btnLaunch.clicked.connect(self.launch_click)
-
         self.btnWest.clicked.connect(self.west_click)
         self.btnEast.clicked.connect(self.east_click)
         self.btnNorth.clicked.connect(self.north_click)
@@ -81,6 +80,10 @@ class MainWindow(QMainWindow):
         self.btnUp.clicked.connect(self.up_click)
         self.btnDown.clicked.connect(self.down_click)
         self.btnSendTraj.clicked.connect(self.sendTrajectory)
+
+        # intialize buttons
+        self.btnLaunch.setEnabled(False)
+        self.btnSendTraj.setEnabled(False)
 
         # add visualizer
         self.quad = Quadrotor(size=0.5)
@@ -146,7 +149,7 @@ class MainWindow(QMainWindow):
 
         # change state
         self.state = State.INITIALIZED
-        #
+        self.btnLaunch.setEnabled(True)
 
     def updateFlightModeGUI(self, value):
         logging.info(f'flight mode change to {value}')
@@ -156,19 +159,23 @@ class MainWindow(QMainWindow):
     def updateLocationGUI(self, location):
         # self.lblLongValue.setText(str(location.global_frame.lon))
         # self.lblLatValue.setText(str(location.global_frame.lat))
-
-        self.lblAltValue.setText(str(location.global_relative_frame.alt))
         # location.local_frame.
         x = location.local_frame.east
         y = location.local_frame.north
-        if x is None or y is None:
-            x,  y = 0, 0
-        # print(x, y)
+        z = location.local_frame.down
+
+        if x is None or y is None or z is None:
+            x,  y, z = 0, 0, 0
+        z = min(-z, 0.0)
+        logging.debug(f'location: {x}, {y}, {z}')
         self.coord[0] = x
         self.coord[1] = y
-        self.coord[2] = location.global_relative_frame.alt
+        self.coord[2] = z
+
         self.lblLongValue.setText(f"{x:.4f}")
         self.lblLatValue.setText(f"{y:.4f}")
+        self.lblAltValue.setText(f"{z:.4f}")
+
         self.quad.update_pose(x,y,location.global_relative_frame.alt,0,0,0)
 
     def addObserverAndInit(self, name, cb):
@@ -208,6 +215,7 @@ class MainWindow(QMainWindow):
         elif self.state == State.HOVER:
             logging.info("vehicle reached to hovering position")
             self.progressBar.setValue(100)
+            self.btnSendTraj.setEnabled(True)
 
         elif self.state == State.INITIALIZED:
             logging.info("vehicle landed")
