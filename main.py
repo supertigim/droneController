@@ -166,7 +166,7 @@ class MainWindow(QMainWindow):
 
         if x is None or y is None or z is None:
             x,  y, z = 0, 0, 0
-        z = min(-z, 0.0)
+        z = max(-z, 0.0)
         logging.debug(f'location: {x}, {y}, {z}')
         self.coord[0] = x
         self.coord[1] = y
@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         self.lblLatValue.setText(f"{y:.4f}")
         self.lblAltValue.setText(f"{z:.4f}")
 
-        self.quad.update_pose(x,y,location.global_relative_frame.alt,0,0,0)
+        self.quad.update_pose(x,y,z,0,0,0)
 
     def addObserverAndInit(self, name, cb):
         """We go ahead and call our observer once at startup to get an initial value"""
