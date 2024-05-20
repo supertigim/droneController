@@ -31,7 +31,9 @@ class Config:
         self.default_takeoff_alt = float(config['DEFAULT']['TAKEOFF_ALTITUDE'])
         self.default_cmd_vel = float(config['DEFAULT']['CMD_VEL'])
         self.default_dt = float(config['DEFAULT']['DT'])
-        self.ip_addr = str(config['DRONEKIT']['IP_ADDR'])
+        self.is_sim = int(config['DRONEKIT']['SIM'])
+        assert self.is_sim in [0, 1]
+        self.ip_addr = "0.0.0.0:18990" if self.is_sim == 0 else ""
 
         if not os.path.exists(self.traj_path):
             logging.error(f'{self.traj_path} does not exist!')
@@ -86,7 +88,7 @@ class MainWindow(QMainWindow):
 
         # intialize buttons
         self.btnLaunch.setEnabled(False)
-        self.btnSendTraj.setEnabled(False)
+        # self.btnSendTraj.setEnabled(False)
 
         # add visualizer
         self.quad = Quadrotor(size=0.5)
@@ -151,8 +153,12 @@ class MainWindow(QMainWindow):
             , lambda vehicle, name, location: self.updateLocationGUI(location))
 
         # change state
-        self.state = State.INITIALIZED
-        self.btnLaunch.setEnabled(True)
+        if self.config.is_sim == 0:
+            self.state = State.HOVER
+            self.vehicle.mode = VehicleMode("GUIDED")
+        else:
+            self.state = State.INITIALIZED
+            self.btnLaunch.setEnabled(True)
 
     def updateFlightModeGUI(self, value):
         logging.info(f'flight mode change to {value}')
