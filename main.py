@@ -14,9 +14,27 @@ import time
 from Quadrotor import Quadrotor
 import numpy as np
 import os
+import logging
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%H:%M:%S')
 
 
-TRAJ_PATH = '/home/redwan/PycharmProjects/droneController/trajs/spiral8.csv'
+class Config:
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.traj_path = f"{os.getcwd()}/{str(config['Trajectory']['traj_path'])}"
+        self.traj_dt = int(config['Trajectory']['traj_dt'])
+        self.default_takeoff_alt = float(config['DEFAULT']['TAKEOFF_ALTITUDE'])
+        self.default_cmd_vel = float(config['DEFAULT']['CMD_VEL'])
+        self.default_dt = float(config['DEFAULT']['DT'])
+        self.ip_addr = str(config['DRONEKIT']['IP_ADDR'])
+
+        if not os.path.exists(self.traj_path):
+            logging.error(f'{self.traj_path} does not exist!')
+            return
 
 
 
@@ -35,15 +53,15 @@ class Action(Enum):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, config):
+    def __init__(self):
 
         super().__init__()
         uic.loadUi('window.ui', self)
-        self.config = config
+        self.config = Config()
         self.state = State.LAND
         self.coord = np.zeros(3)
         self.progressBar.setValue(0)
-        self.thread = Thread(target=self.connect, args=(config.ip_addr,))
+        self.thread = Thread(target=self.connect, args=(self.config.ip_addr,))
         self.thread.start()
 
         self.transition = defaultdict(dict)
@@ -76,23 +94,23 @@ class MainWindow(QMainWindow):
             target = self.traj[self.traj_index][1:]
             vel = target - self.coord
             vx, vy, vz = vel
-            print(f"[Traj] vx = {vx:.3f}, vy = {vy:.3f} ")
+            logging.debug(f"[Traj] vx = {vx:.3f}, vy = {vy:.3f} ")
             self.publish_cmd_vel(vy, vx, -vz)
         elif self.traj_index - 10 < len(self.traj):
             self.publish_cmd_vel(0, 0, 0)
         else:
-            print("trajectory timer stopped")
+            logging.debug("trajectory timer stopped")
             self.traj_timer.stop()
 
     def sendTrajectory(self):
 
-        if not os.path.exists(TRAJ_PATH):
-            print(f'{self.config.traj_path} does not exist!')
+        if not os.path.exists(self.config.traj_path):
+            logging.error(f'{self.config.traj_path} does not exist!')
             return
-        print('sending trajectory')
+        logging.info('sending trajectory')
 
         if self.state == State.HOVER:
-            self.traj = np.loadtxt(TRAJ_PATH, delimiter=",")
+            self.traj = np.loadtxt(self.config.traj_path, delimiter=",")
             self.traj_timer = QTimer()
             self.traj_index = 0
             self.traj_timer.timeout.connect(self.traj_callback)
@@ -109,7 +127,7 @@ class MainWindow(QMainWindow):
             self.connection_string = self.sitl.connection_string()
 
         # Connect to the Vehicle
-        print('Connecting to vehicle on: %s' % self.connection_string)
+        logging.info('Connecting to vehicle on: %s' % self.connection_string)
 
         self.vehicle = connect(self.connection_string, wait_ready=True)
         self.progressBar.setValue(25)
@@ -131,7 +149,7 @@ class MainWindow(QMainWindow):
         #
 
     def updateFlightModeGUI(self, value):
-        print('flight mode change to ', value)
+        logging.info(f'flight mode change to {value}')
         index, mode = str(value).split(':')
         self.lblFlightModeValue.setText(mode)
 
@@ -176,7 +194,7 @@ class MainWindow(QMainWindow):
             return
 
         self.state = self.transition[self.state][action]
-        print(self.state.name, self.vehicle.system_status.state)
+        logging.info("[State]: {} | Action = {}".format(self.state.name, self.vehicle.system_status.state))
 
         if self.state == State.ARMED:
             self.vehicle.mode = VehicleMode("GUIDED")
@@ -188,11 +206,11 @@ class MainWindow(QMainWindow):
             self.progressBar.setValue(75)
 
         elif self.state == State.HOVER:
-            print("vehicle reached to hovering position")
+            logging.info("vehicle reached to hovering position")
             self.progressBar.setValue(100)
 
         elif self.state == State.INITIALIZED:
-            print("vehicle landed")
+            logging.info("vehicle landed")
             self.timer.stop()
 
             ############### MAV LINK communication ##########################################################################
@@ -221,7 +239,7 @@ class MainWindow(QMainWindow):
     ############### Joystick communication ##########################################################################
     def vehicle_validation(self, function):
         if self.vehicle.mode == "GUIDED":
-            print('button clicked ', function.__name__)
+            logging.debug('button clicked ', function.__name__)
             function()
 
     def west_click(self):
@@ -276,35 +294,20 @@ class MainWindow(QMainWindow):
         """
         Arms vehicle and fly to self.alt
         """
-        print('launch button pressed')
+        logging.debug('launch button pressed')
         if self.state == State.INITIALIZED:
-            print('initializeing taking off ...')
+            logging.info('initializeing taking off ...')
             self.timer = QTimer()
             self.timer.timeout.connect(self.timerCallback)
             self.timer.start(1000)
         else:
-            print("launch has already been initialized !")
+            logging.warning("launch has not been initialized !")
 
-
-class Config:
-    def __init__(self):
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self.traj_path = f"{config['Trajectory']['traj_path']}"
-        self.traj_dt = int(config['Trajectory']['traj_dt'])
-        self.default_takeoff_alt = float(config['DEFAULT']['TAKEOFF_ALTITUDE'])
-        self.default_cmd_vel = float(config['DEFAULT']['CMD_VEL'])
-        self.default_dt = float(config['DEFAULT']['DT'])
-
-        self.ip_addr = f"{config['DRONEKIT']['IP_ADDR']}"
 
 
 
 if __name__ == '__main__':
-
-
-    config = Config()
     app = QApplication(sys.argv)
-    window = MainWindow(config)
+    window = MainWindow()
     window.show()
     sys.exit(app.exec())
