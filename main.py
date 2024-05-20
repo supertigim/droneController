@@ -6,6 +6,7 @@ import sys
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 from threading import Thread
+import PyQt5
 
 import configparser
 from enum import Enum
@@ -72,11 +73,13 @@ class MainWindow(QMainWindow):
 
         self.launchAlt = self.config.default_takeoff_alt
         self.btnLaunch.clicked.connect(self.launch_click)
+
         self.btnWest.clicked.connect(self.west_click)
         self.btnEast.clicked.connect(self.east_click)
         self.btnNorth.clicked.connect(self.north_click)
         self.btnSouth.clicked.connect(self.south_click)
         self.btnRTL.clicked.connect(self.rtl_click)
+
         self.btnUp.clicked.connect(self.up_click)
         self.btnDown.clicked.connect(self.down_click)
         self.btnSendTraj.clicked.connect(self.sendTrajectory)
@@ -251,30 +254,45 @@ class MainWindow(QMainWindow):
             function()
 
     def west_click(self):
+        if self.state != State.HOVER:
+            logging.warning("[Invalid request]: moving west is not possible")
+            return
         @self.vehicle_validation
         def west_wrapped():
             self.send_ned_velocity(0, -self.config.default_cmd_vel, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def east_click(self):
+        if self.state != State.HOVER:
+            logging.warning("[Invalid request]: moving east is not possible")
+            return
         @self.vehicle_validation
         def east_wrapped():
             self.send_ned_velocity(0, self.config.default_cmd_vel, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def north_click(self):
+        if self.state != State.HOVER:
+            logging.warning("[Invalid request]: moving north is not possible")
+            return
         @self.vehicle_validation
         def north_wrapped():
             self.send_ned_velocity(self.config.default_cmd_vel, 0, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def south_click(self):
+        if self.state != State.HOVER:
+            logging.warning("[Invalid request]: moving south is not possible")
+            return
         @self.vehicle_validation
         def south_wrapped():
             self.send_ned_velocity(-self.config.default_cmd_vel, 0, 0, 1)
             # self.send_ned_velocity(0, 0, 0, 1)
 
     def rtl_click(self):
+        if self.state == State.LAND or self.state == State.INITIALIZED:
+            logging.warning("[Invalid request]: landing is not possible")
+            return
         @self.vehicle_validation
         def rtl_wrapped():
             self.vehicle.mode = VehicleMode("LAND")
@@ -282,6 +300,9 @@ class MainWindow(QMainWindow):
 
 
     def up_click(self):
+        if self.state != State.HOVER:
+            logging.warning("[Invalid request]: moving up is not possible")
+            return
         @self.vehicle_validation
         def up_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
@@ -290,6 +311,9 @@ class MainWindow(QMainWindow):
                 # self.send_ned_velocity(0, 0, 0, 1)
 
     def down_click(self):
+        if self.state != State.HOVER:
+            logging.warning("[Invalid request]: moving down is not possible")
+            return
         @self.vehicle_validation
         def down_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt

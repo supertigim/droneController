@@ -45,26 +45,6 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="2" column="1" colspan="2">
-            <widget class="QLabel" name="lblLongValue">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="0">
             <widget class="QLabel" name="lblLon">
              <property name="text">
@@ -79,6 +59,33 @@
              </property>
             </widget>
            </item>
+           <item row="4" column="0" colspan="3">
+            <widget class="QProgressBar" name="progressBar">
+             <property name="value">
+              <number>24</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="2">
+            <widget class="QLabel" name="lblLongValue">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
            <item row="3" column="1">
             <spacer name="verticalSpacer">
              <property name="orientation">
@@ -91,13 +98,6 @@
               </size>
              </property>
             </spacer>
-           </item>
-           <item row="3" column="0">
-            <widget class="QProgressBar" name="progressBar">
-             <property name="value">
-              <number>24</number>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>
@@ -119,7 +119,17 @@
         <item row="7" column="1">
          <widget class="QPushButton" name="btnSouth">
           <property name="text">
-           <string>Go South</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>arrows/down.png</normaloff>arrows/down.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>28</width>
+            <height>28</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -147,14 +157,57 @@
         <item row="5" column="1">
          <widget class="QPushButton" name="btnNorth">
           <property name="text">
-           <string>Go North</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>arrows/up.png</normaloff>arrows/up.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>28</width>
+            <height>28</height>
+           </size>
           </property>
          </widget>
         </item>
         <item row="6" column="1">
          <widget class="QPushButton" name="btnRTL">
+          <property name="font">
+           <font>
+            <pointsize>-1</pointsize>
+            <weight>75</weight>
+            <italic>false</italic>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton{
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
+                                stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
+    border-style: outset;
+    border-width: 1px;
+    border-radius: 19px;
+    border-color: beige;
+    font: bold 14px;
+    min-width:1em;
+    padding: 10px;
+}
+
+QPushButton:pressed {
+    background-color: rgb(224, 0, 0);
+    border-style: inset;
+}</string>
+          </property>
           <property name="text">
            <string>LAND</string>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>28</width>
+            <height>28</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -168,14 +221,34 @@
         <item row="6" column="0">
          <widget class="QPushButton" name="btnWest">
           <property name="text">
-           <string>Go West</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>arrows/left.png</normaloff>arrows/left.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>28</width>
+            <height>28</height>
+           </size>
           </property>
          </widget>
         </item>
         <item row="6" column="2">
          <widget class="QPushButton" name="btnEast">
           <property name="text">
-           <string>Go East</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>arrows/right.png</normaloff>arrows/right.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>28</width>
+            <height>28</height>
+           </size>
           </property>
          </widget>
         </item>
