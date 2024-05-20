@@ -175,11 +175,12 @@ class MainWindow(QMainWindow):
         self.coord[1] = y
         self.coord[2] = z
 
+        heading = np.deg2rad(45)
         self.lblLongValue.setText(f"{x:.4f}")
         self.lblLatValue.setText(f"{y:.4f}")
         self.lblAltValue.setText(f"{z:.4f}")
 
-        self.quad.update_pose(x,y,z,0,0,0)
+        self.quad.update_pose(x,y,z,0,0,heading)
 
     def addObserverAndInit(self, name, cb):
         """We go ahead and call our observer once at startup to get an initial value"""
