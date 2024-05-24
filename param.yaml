@@ -10,7 +10,7 @@ Trajectory:
 
 Vicon:
   IP_ADDR: "192.168.10.2"
-  obj_name: "djimini"
+  obj_name: "mavicair1" # "djimini"
   vicon_dt: 1
 
 Drone:
