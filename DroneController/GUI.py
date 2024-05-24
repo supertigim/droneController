@@ -12,6 +12,7 @@ import numpy as np
 from .ViconClient import ViconClient
 from .Drone import djiDrone
 from .TrajFollower import TrajFollower
+from .utilities import ConfigParser
 
 import logging
 logging.basicConfig(
@@ -22,31 +23,33 @@ logging.basicConfig(
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, config:ConfigParser):
         super().__init__()
-        ui_path = "/home/airlab/PyDev/droneController/window.ui"
+        self.__config = config.GUI
+        ui_path = self.__config.ui_path
         uic.loadUi(ui_path, self)
-        self.coord = np.zeros(4)
+        self.coord = np.zeros(4) # x, y, z, yaw
+        
+
 
          # add visualizer
         self.quad = Quadrotor(size=0.5)
         self.viewer.addWidget(self.quad.canvas)
 
         
-        self.vicon = ViconClient(self)
+        self.vicon = ViconClient(self, config.Vicon)
         self.vicon.pose_signal.connect(self.pose_callback)
 
         # viz timer 
         self.viz_timer = QTimer()
         self.viz_timer.timeout.connect(self.updatePoseGUI)
-        self.viz_timer.start(30)
+        self.viz_timer.start(self.__config.viz_dt)
 
 
         # establish mavlink connection 
-        self.dji = djiDrone(self)
+        self.dji = djiDrone(self, config.Drone)
         self.dji.updateFlightModeGUI.connect(self.updateFlightModeGUI)
 
-        self.dji.mavlink_connect("0.0.0.0:18990")
         self.btnWest.clicked.connect(self.dji.west_click)
         self.btnEast.clicked.connect(self.dji.east_click)
         self.btnNorth.clicked.connect(self.dji.north_click)
@@ -57,8 +60,8 @@ class MainWindow(QMainWindow):
 
 
         # trajectory follower 
-        traj_path = "/home/airlab/PyDev/droneController/trajs/spiral8.csv"
-        self.traj = TrajFollower(self.coord, traj_path, self.dji, self)
+        #FIXME traj_path = "/home/airlab/PyDev/droneController/trajs/spiral8.csv"
+        self.traj = TrajFollower(self.coord, config.Trajectory, self.dji, self)
         self.btnSendTraj.clicked.connect(self.traj.sendTrajectory)
 
     @pyqtSlot(dict)

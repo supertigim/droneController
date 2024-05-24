@@ -4,7 +4,7 @@ import time
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
-from .utilities import State
+from .utilities import State, DynamicAttributes
 
 import logging
 logging.basicConfig(
@@ -16,11 +16,13 @@ logging.basicConfig(
 class djiDrone(QObject):
     updateFlightModeGUI = pyqtSignal(VehicleMode)
 
-    def __init__(self, parent: QObject) -> None:
+    def __init__(self, parent: QObject, config:DynamicAttributes) -> None:
         super().__init__(parent)
+        self.__config = config
         self.state = State.LAND
-        self.default_cmd_vel = 0.4
-        self.default_dt = 0.05
+        self.default_cmd_vel = self.__config.default_cmd_vel
+        self.default_dt = self.__config.default_dt
+        self.mavlink_connect(self.__config.mavlink)
         
 
     def mavlink_connect(self, connection_string):

@@ -2,7 +2,7 @@ import time
 import numpy as np
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal, pyqtSlot
 from pyvicon_datastream import tools
-from .utilities import State
+from .utilities import State, DynamicAttributes
 
 import logging
 logging.basicConfig(
@@ -14,11 +14,12 @@ logging.basicConfig(
 class ViconClient(QObject):
     pose_signal = pyqtSignal(dict)
 
-    def __init__(self, parent: QObject) -> None:
+    def __init__(self, parent: QObject, config:DynamicAttributes) -> None:
         super().__init__(parent)
-        self.IP_ADDR = "192.168.10.2"
+        self.__config = config
+        self.IP_ADDR = self.__config.IP_ADDR
         self.tracker = tools.ObjectTracker(self.IP_ADDR)
-        self.obj_name = "djimini"
+        self.obj_name = self.__config.obj_name
         if self.tracker.is_connected:
             self.state = State.VICON_CONNECTED 
             logging.info('vicon connected ...')
@@ -51,6 +52,6 @@ class ViconClient(QObject):
         logging.info('vicon connection ressolved ...')
         self.vicon_timer = QTimer()
         self.vicon_timer.timeout.connect(self.pose_callback)
-        self.vicon_timer.start(1)
+        self.vicon_timer.start(self.__config.vicon_dt)
        
 

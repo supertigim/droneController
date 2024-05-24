@@ -4,3 +4,4 @@ dronekit-sitl
 pyqt5
 matplotlib
 pyvicon-datastream
+pyaml

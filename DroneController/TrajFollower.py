@@ -1,7 +1,7 @@
 import numpy as np 
 import os 
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal, pyqtSlot
-from .utilities import State
+from .utilities import State, DynamicAttributes
 from .Drone import djiDrone
 import logging
 logging.basicConfig(
@@ -13,14 +13,15 @@ logging.basicConfig(
 class TrajFollower(QObject):
 
     emergencyLand = pyqtSignal()
-    def __init__(self, coord:np.array, traj_path:str, drone: djiDrone, parent: QObject) -> None:
+    def __init__(self, coord:np.array, config:DynamicAttributes, drone: djiDrone, parent: QObject) -> None:
         super().__init__(parent)
-        self.traj_dt = 10
+        self.__config = config
+        self.traj_dt = self.__config.traj_dt
         self.coord = coord
         self.drone = drone
-        self.traj_path = traj_path
+        self.traj_path = self.__config.traj_path
         self.emergencyLand.connect(self.drone.rtl_click)
-        self.fence = [-2, 2, -2, 2]
+        self.fence = self.__config.fence
         
 
     def checkWithinGeoFence(self):
