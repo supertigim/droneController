@@ -12,7 +12,7 @@ import configparser
 from enum import Enum
 from collections import defaultdict
 import time
-from Quadrotor import Quadrotor
+from DroneController.Quadrotor import Quadrotor
 import numpy as np
 import os
 import logging

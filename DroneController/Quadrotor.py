@@ -82,7 +82,7 @@ class Quadrotor:
         self.ax.plot([p1_t[0], p2_t[0]], [p1_t[1], p2_t[1]],
                      [p1_t[2], p2_t[2]], 'r-')
         self.ax.plot([p3_t[0], p4_t[0]], [p3_t[1], p4_t[1]],
-                     [p3_t[2], p4_t[2]], 'r-')
+                     [p3_t[2], p4_t[2]], 'g-')
 
         self.ax.plot(self.x_data, self.y_data, self.z_data, 'b:')
 

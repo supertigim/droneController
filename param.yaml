@@ -1,0 +1,20 @@
+GUI:
+  ui_path: "/home/airlab/PyDev/droneController/window.ui"
+  viz_dt: 30
+  
+
+Trajectory:
+  traj_path: "/home/airlab/PyDev/droneController/trajs/spiral8.csv"
+  traj_dt: 10 
+  fence: [-2, 2, -2, 2]
+
+Vicon:
+  IP_ADDR: "192.168.10.2"
+  obj_name: "djimini"
+  vicon_dt: 1
+
+Drone:
+  mavlink: "0.0.0.0:18990"
+  default_cmd_vel: 0.4
+  default_dt: 0.05
+
