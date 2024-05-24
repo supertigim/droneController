@@ -5,7 +5,7 @@ GUI:
 
 Trajectory:
   traj_path: "/home/airlab/PyDev/droneController/trajs/spiral8.csv"
-  traj_dt: 10 
+  traj_dt: 2 
   fence: [-2, 2, -2, 2]
 
 Vicon:

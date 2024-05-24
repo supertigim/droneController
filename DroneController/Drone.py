@@ -123,7 +123,7 @@ class djiDrone(QObject):
         def up_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
             if alt < 3:
-                self.send_ned_velocity(0, 0, -0.5 * self.default_cmd_vel, 1)
+                self.send_ned_velocity(0, 0, 0.5 * self.default_cmd_vel, 1)
                 # self.send_ned_velocity(0, 0, 0, 1)
 
     @pyqtSlot()
@@ -135,7 +135,7 @@ class djiDrone(QObject):
         def down_wrapped():
             alt = self.vehicle.location.global_relative_frame.alt
             if alt > 0.5:
-                self.send_ned_velocity(0, 0, 0.5 * self.default_cmd_vel, 1)
+                self.send_ned_velocity(0, 0, -0.5 * self.default_cmd_vel, 1)
                 # self.send_ned_velocity(0, 0, 0, 1)
 
 
