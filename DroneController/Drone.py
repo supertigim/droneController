@@ -1,5 +1,6 @@
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
+from PyQt5.QtCore import QTimer
 import time 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -14,7 +15,7 @@ logging.basicConfig(
 
 
 class djiDrone(QObject):
-    updateFlightModeGUI = pyqtSignal(VehicleMode)
+    updateFlightModeGUI = pyqtSignal(str)
 
     def __init__(self, parent: QObject, config:DynamicAttributes) -> None:
         super().__init__(parent)
@@ -28,16 +29,35 @@ class djiDrone(QObject):
     def mavlink_connect(self, connection_string):
         self.vehicle = connect(connection_string, wait_ready=True)
         self.state = State.HOVER
-        self.vehicle.mode = VehicleMode("GUIDED")
+        
         # Display Flight Mode
-        self.updateFlightModeGUI.emit(self.vehicle.mode)
+        def modeCallback(vehicle, name, mode):
+            # print(vehicle, name, mode)
+            index, modeName = str(mode).split(':')
+            self.updateFlightModeGUI.emit(modeName)
         self.addObserverAndInit(
             'mode'
-            , lambda vehicle, name, mode: self.updateFlightModeGUI.emit(mode))
+            , modeCallback
+        )
+
+        self.vehicle.mode = VehicleMode("GUIDED")
+        
+
+        self.viz_timer = QTimer()
+        self.viz_timer.timeout.connect(self.updateModeGUI)
+        self.viz_timer.start(1000)
     
+    def updateModeGUI(self):
+        index, modeName = str(self.vehicle.mode).split(':')
+        self.updateFlightModeGUI.emit(modeName)
+        logging.info(modeName)
+        self.viz_timer.stop()
+
+ 
     def addObserverAndInit(self, name, cb):
         """We go ahead and call our observer once at startup to get an initial value"""
         self.vehicle.add_attribute_listener(name, cb)
+   
 
     
 
@@ -64,7 +84,7 @@ class djiDrone(QObject):
 ############### Joystick communication ##########################################################################
     def vehicle_validation(self, function):
         if self.vehicle.mode == "GUIDED":
-            logging.info('button clicked ', function.__name__)
+            logging.info(f'button clicked {function.__name__}')
             function()
     @pyqtSlot()
     def west_click(self):

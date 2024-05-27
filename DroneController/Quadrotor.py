@@ -22,6 +22,7 @@ class Quadrotor:
         self.y_data = []
         self.z_data = []
         self.show_animation = show_animation
+        self.path = None 
 
         if self.show_animation:
             # plt.ion()
@@ -35,6 +36,10 @@ class Quadrotor:
 
 
         self.update_pose(x, y, z, roll, pitch, yaw)
+    
+    def setPath(self, path:np.ndarray):
+        self.path = path
+
 
     def update_pose(self, x, y, z, roll, pitch, yaw):
         self.x = x
@@ -85,6 +90,9 @@ class Quadrotor:
                      [p3_t[2], p4_t[2]], 'g-')
 
         self.ax.plot(self.x_data, self.y_data, self.z_data, 'b:')
+
+        if self.path is not None:
+            self.ax.plot(self.path[:, 0], self.path[:, 1], np.ones(len(self.path)), 'r')
 
         self.ax.set_xlim(-3.0, 3.0)
         self.ax.set_ylim(-3.0, 3.0)

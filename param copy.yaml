@@ -4,13 +4,13 @@ GUI:
   
 
 Trajectory:
-  traj_path: "/home/airlab/PyDev/droneController/trajs/spiral85.csv"
+  traj_path: "/home/airlab/PyDev/droneController/trajs/spiral8.csv"
   traj_dt: 2 
-  fence: [-3, 3, -3, 3]
+  fence: [-2, 2, -2, 2]
 
 Vicon:
   IP_ADDR: "192.168.10.2"
-  obj_name: "mavicair1" # "djimini" mavicair1
+  obj_name: "mavicair1" # "djimini"
   vicon_dt: 1
 
 Drone:

@@ -8,6 +8,7 @@ from PyQt5.QtCore import QTimer, QObject, pyqtSignal, pyqtSlot
 import time
 from .Quadrotor import Quadrotor
 import numpy as np
+from PyQt5.QtCore import QTimer, QObject, pyqtSignal, pyqtSlot
 
 from .ViconClient import ViconClient
 from .Drone import djiDrone
@@ -23,14 +24,13 @@ logging.basicConfig(
 
 
 class MainWindow(QMainWindow):
+
     def __init__(self, config:ConfigParser):
         super().__init__()
         self.__config = config.GUI
         ui_path = self.__config.ui_path
         uic.loadUi(ui_path, self)
         self.coord = np.zeros(4) # x, y, z, yaw
-        
-
 
          # add visualizer
         self.quad = Quadrotor(size=0.5)
@@ -60,9 +60,23 @@ class MainWindow(QMainWindow):
 
 
         # trajectory follower 
-        #FIXME traj_path = "/home/airlab/PyDev/droneController/trajs/spiral8.csv"
         self.traj = TrajFollower(self.coord, config.Trajectory, self.dji, self)
-        self.btnSendTraj.clicked.connect(self.traj.sendTrajectory)
+        self.btnSendTraj.clicked.connect(self.sendTrajectory)
+        self.numPointsText.textChanged.connect(self.updateNumPoints)
+        self.traj.maxVelSignal.connect(self.updateMaxVel)
+
+    def sendTrajectory(self):
+        self.traj.sendTrajectory()
+        self.quad.setPath(self.traj.traj)
+  
+
+    def updateNumPoints(self):
+        text = self.numPointsText.text()
+        try:
+            numPoints = int(text)
+            self.traj.updateTrajPoints(numPoints)
+        except:
+            pass
 
     @pyqtSlot(dict)
     def pose_callback(self, data):
@@ -83,13 +97,17 @@ class MainWindow(QMainWindow):
         self.lblAltValue.setText(f"{z:.4f}")
         logging.debug(f'location: {x}, {y}, {z}')
 
-    @pyqtSlot(VehicleMode)
+    @pyqtSlot(str)
     def updateFlightModeGUI(self, value):
         logging.info(f'flight mode change to {value}')
-        index, mode = str(value).split(':')
-        self.lblFlightModeValue.setText(mode)
+        # index, mode = str(value).split(':')
+        self.lblFlightModeValue.setText(value)
         self.progressBar.setValue(100)
 
     def updatePoseGUI(self):
         heading = np.deg2rad(45) + self.coord[3]
         self.quad.update_pose( self.coord[0], self.coord[1], self.coord[2],0,0, heading)
+
+    @pyqtSlot(float)
+    def updateMaxVel(self, value):
+        self.lbMaxVal.setText(f"{value:.3f} m/s")

@@ -38,42 +38,21 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout">
+           <item row="4" column="1">
+            <widget class="QLabel" name="lbNumPoints">
+             <property name="text">
+              <string>#Points</string>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="1">
-            <widget class="QLabel" name="lblLatValue">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="lblLon">
-             <property name="text">
-              <string>y_coord</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
             <widget class="QLabel" name="lblLat">
              <property name="text">
               <string>x_coord</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="3">
-            <widget class="QProgressBar" name="progressBar">
-             <property name="value">
-              <number>24</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1" colspan="2">
-            <widget class="QLabel" name="lblLongValue">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
+           <item row="0" column="3">
             <spacer name="verticalSpacer_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -86,7 +65,42 @@
              </property>
             </spacer>
            </item>
+           <item row="2" column="3" colspan="2">
+            <widget class="QLabel" name="lblLongValue">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
            <item row="3" column="1">
+            <widget class="QLabel" name="lblAlt">
+             <property name="text">
+              <string>z_coord</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="lblLatValue">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QLineEdit" name="numPointsText">
+             <property name="text">
+              <string>500</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1" colspan="4">
+            <widget class="QProgressBar" name="progressBar">
+             <property name="value">
+              <number>24</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -98,6 +112,34 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="lblLon">
+             <property name="text">
+              <string>y_coord</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLabel" name="lbMaxValName">
+             <property name="text">
+              <string>MaxVel</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QLabel" name="lblAltValue">
+             <property name="text">
+              <string>altVal</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="3">
+            <widget class="QLabel" name="lbMaxVal">
+             <property name="text">
+              <string>0.0 m/s</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -137,13 +179,6 @@
          <widget class="QLabel" name="lblFlightMode">
           <property name="text">
            <string> Flight Mode :</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QLabel" name="lblAltValue">
-          <property name="text">
-           <string/>
           </property>
          </widget>
         </item>
@@ -252,13 +287,6 @@ QPushButton:pressed {
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="lblAlt">
-          <property name="text">
-           <string> Altitude    : </string>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="1">
          <widget class="QPushButton" name="btnSendTraj">
           <property name="text">
@@ -285,7 +313,7 @@ QPushButton:pressed {
      <x>0</x>
      <y>0</y>
      <width>915</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
