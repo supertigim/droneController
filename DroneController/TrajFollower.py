@@ -136,7 +136,7 @@ class TrajFollower(QObject):
             u = np.array([[vx], [vy]])
             self.xEst, self.PEst = ekf_estimation(self.xEst, self.PEst, z, u, dt)
             self.VMAX = max(self.VMAX, np.sqrt(self.xEst[2, 0] ** 2 + self.xEst[3, 0] ** 2))
-            logging.info(f"VMAX = {self.VMAX}")
+            logging.debug(f"VMAX = {self.VMAX}")
             self.maxVelSignal.emit(self.VMAX)
 
 
