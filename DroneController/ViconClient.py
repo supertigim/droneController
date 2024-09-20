@@ -40,6 +40,8 @@ class ViconClient(QObject):
         latency, frameno, position = self.tracker.get_position(self.obj_name)
         if position != []:
             xyz_position = position[0][2:5] # get x,y,z only
+            # xyz_position[0] *= -1 
+            # xyz_position[1] *= -1 
             orientation = position[0][7] # get rotation around z axis
             data = {"position": np.array(xyz_position) / 1000.0, "orientation" : orientation}
             self.pose_signal.emit(data)

@@ -165,8 +165,14 @@ class TrajFollower(QObject):
         self.VMAX = 0.0
 
 
-        # self.traj = np.loadtxt(self.traj_path, delimiter=",")
+        # self.traj_path = "trajs/traj_2obs_vicon.csv"
+        # self.traj_path = 'trajs/traj_L_vicon.csv'
 
+        # # # comment out the below 3 lines for different traj
+        # self.traj = np.loadtxt(self.traj_path, delimiter=",")[:, :2]
+        # # self.traj = np.flipud(self.traj)
+        # # self.traj = np.fliplr(self.traj)
+        
         # compute trajectory 
         xx, yy = generate_spiral_eight(num_points=self.num_points)
         self.traj = np.column_stack((xx, yy))
