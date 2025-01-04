@@ -1,2 +1,8 @@
 .idea
 .pyc
+.venv
+__pycache__
+.vscode
+'python=3.6'
+pyvicon-datatstream-module
+DroneController/__pycache__

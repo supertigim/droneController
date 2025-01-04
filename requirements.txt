@@ -1,0 +1,7 @@
+pymavlink==2.4.8
+dronekit
+dronekit-sitl
+pyqt5
+matplotlib
+pyvicon-datastream
+pyaml
